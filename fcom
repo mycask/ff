@@ -1,0 +1,84 @@
+#!/bin/sh
+
+# fcom - Common code for ff scripts.
+#
+# Copyright (c) 2018 Susam Pal
+# All rights reserved.
+
+
+VERSION=0.1.0
+AUTHOR="Susam Pal"
+COPYRIGHT="Copyright (c) 2018 $AUTHOR"
+
+LICENSE_URL="http://susam.in/licenses/mit/"
+SUPPORT_URL="https://github.com/susam/ff/issues"
+
+NOTICE="
+This is free and open source software. You can use, copy, modify,
+merge, publish, distribute, sublicense, and/or sell copies of it,
+under the terms of the MIT License. You can obtain a copy of the
+MIT License at <$LICENSE_URL>.
+
+This software is provided \"AS IS\", WITHOUT WARRANTY OF ANY KIND,
+express or implied. See the MIT License for details."
+
+
+# Directories where files are searched recursively. All files found in
+# these directories and their subdirectories are indexed in the cache
+# location specified by FFCACHE environment variable. Multiple
+# colon-separated paths may be specified here.
+FFPATH=.
+
+# Cache directory where cache files are written to.
+FFCACHE=~/.cache/ff
+
+# User configuration file. It is ~/.ffrc by default. However the path to
+# the configuration file may be overridden by defining the FFRC
+# environment variable.
+[ -z "$FFRC" ] && FFRC=~/.ffrc
+
+# Load the configuration file.
+. "$FFRC"
+
+# Cache file where all path of all files found in the directories
+# specified in FFPATH environment variable are written to.
+FFPATH_CACHE="$FFCACHE"/files.txt
+
+# Automatically determine the name of the script being run.
+NAME=${0##*/}
+
+
+# Log a message to standard error stream.
+#
+# Arguments:
+#   string...: String to print to standard error stream.
+log()
+{
+    printf "%s: %s\n" "$NAME" "$*" >&2
+}
+
+
+# Terminate the script with an error message.
+#
+# Arguments:
+#   string...: String to print to standard error stream.
+#
+# Errors:
+#   Unconditionally cause the script to terminate with an error message
+#   and exit code 1.
+quit()
+{
+    log "$@"
+    exit 1
+}
+
+
+# Show version and copyright.
+show_version()
+{
+    cat <<eof
+$NAME $VERSION
+$COPYRIGHT
+$NOTICE
+eof
+}

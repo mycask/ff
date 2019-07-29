@@ -1,0 +1,92 @@
+#!/bin/sh
+
+# Test Runner.
+
+# The MIT License (MIT)
+#
+# Copyright (c) 2016 Sunaina Pai 
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+# Directory that contains test scripts.
+export TMAIN=test
+
+# Directory that contains test data.
+export TDATA=$TMAIN/data
+
+# Temporary directory that may be used by any tests.
+export TWORK=_test_work
+
+# Ensure $TWORK dir is deleted before the script exits either gracefully
+# or unexpectedly.
+trap "rm -rf \"$TWORK\"" EXIT
+
+# Number of tests that pass.
+pass=0
+
+# Number of tests that fail.
+fail=0
+
+# Loop over each test script in the test directory. 
+while read -r test_file
+do
+    # Execute the test script in the current shell so that the test
+    # functions get defined in the current shell.
+    . "$test_file"
+
+    # Loop over each test function in a test script.
+    while read -r test_function
+    do
+        # Quote the parantheses to avoid the following error in ksh.
+        # syntax error at line 58: `(' unexpected
+        test_function=${test_function%"()"}
+
+        printf "%s: %s: " "${test_file#$TMAIN/}" "$test_function"
+
+        # Create an empty $TWORK directory before running each test.
+        rm -rf "$TWORK"
+        mkdir -p "$TWORK"
+
+        # Execute the test and check its exit status to report if the
+        # test passed or failed.
+        if ("$test_function")
+        then
+            printf "pass\n"
+            pass=$(( $pass + 1 ))
+        else
+            printf "FAIL\n"
+            fail=$(( $fail + 1 ))
+        fi
+    done <<eof
+$(grep "^test_.*()" $test_file)
+eof
+# Do not indent anything within here-document to workaround a yash bug
+# where read command does not remove leading IFS. Ensure that input to
+# read command does not contain leading IFS.
+done <<eof
+$(find test -name "test_*") 
+eof
+
+# Print test summary.
+printf "PASS: %s\n" "$pass"
+
+# Set the exit status of test script to 1 if there are test failures and
+# to 0 if there are no test failures.
+[ $fail -gt 0 ] && printf "FAIL: %s\n" "$fail" && exit 1 || exit 0

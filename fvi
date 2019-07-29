@@ -1,0 +1,82 @@
+#!/bin/sh
+
+# fvi - Execute command with partial paths resolved to absolute paths.
+#
+# Copyright (c) 2017 Susam Pal
+# All rights reserved.
+
+
+# Starting point of this script.
+#
+# Arguments:
+#   arg...: All arguments this script is invoked with.
+main()
+{
+    . fcom
+    parse_arguments "$@"
+    setup_env
+    eval "$EDITOR" "$(ff "$@")"
+}
+
+
+# Setup environment variables and directories.
+setup_env()
+{
+    [ -n "$EDITOR" ] || EDITOR=vi
+}
+
+
+# Parse command line arguments passed to this script.
+#
+# Arguments:
+#   arg...: All arguments this script is invoked with.
+#
+# Errors:
+#   Exit with an error message when invalid arguments are specified.
+parse_arguments()
+{
+    cmd=
+    while [ "$#" -gt 0 ]
+    do
+        case $1 in
+            -h | --help)
+                show_help
+                exit
+                ;;
+            -v | --version)
+                show_version
+                exit
+                ;;
+            -?*)
+                quit Unknown option \""$1"\".
+                ;;
+            *)
+                break 
+                ;;
+        esac
+    done
+
+    [ -z "$1" ] && quit One or more patterns required.
+}
+
+
+# Show help.
+show_help()
+{
+    printf "%s\n" \
+"Usage: $NAME [-h] [-v] [PATH]...
+
+Edit files and directories specified as one or more PATHs with \$EDITOR.
+If the environment variable \$EDITOR is not defined, then the editor
+defaults to vi. A partial path to a file or a directory must be
+specified as PATH.
+
+Options:
+  -h, --help     Show this help and exit.
+  -v, --version  Show version and exit.
+
+Report bugs to $AUTHOR."
+}
+
+
+main "$@"

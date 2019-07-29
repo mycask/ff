@@ -1,0 +1,106 @@
+#!/bin/sh
+
+# fin - Index list of files from directories configured in ~/.ffrc.
+
+# The MIT License (MIT)
+#
+# Copyright (c) 2017 Susam Pal
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+# Starting point of this script.
+#
+# Arguments:
+#   arg...: All arguments this script is invoked with.
+main()
+{
+    . fcom
+    parse_arguments "$@"
+
+    mkdir -p "$FFCACHE" || quit Cannot create "$FFCACHE".
+
+    > "$FFPATH_CACHE"
+    IFS=:
+    for dir in $FFPATH
+    do
+        unset IFS
+        [ "$quiet" = yes ] || log Indexing "$dir" ...
+        find -L "$dir" \( -name '.*' \) -prune -o -print >> "$FFPATH_CACHE"
+    done
+    [ "$quiet" = yes ] || log Index cached at "$FFPATH_CACHE".
+}
+
+
+# Parse command line arguments passed to this script.
+#
+# Arguments:
+#   arg...: All arguments this script is invoked with.
+#
+# Errors:
+#   Exit with an error message when invalid arguments are specified.
+parse_arguments()
+{
+    # Parse command line options.
+    while [ "$#" -gt 0 ]
+    do
+        case $1 in
+            -q | --quiet)
+                quiet=yes
+                shift
+                ;;
+            -h | --help)
+                show_help
+                exit
+                ;;
+            -v | --version)
+                show_version
+                exit
+                ;;
+            -?*)
+                quit Unknown option \""$1"\".
+                ;;
+            *)
+                quit Surplus argument \""$1"\".
+                ;;
+        esac
+    done
+}
+
+
+# Show help.
+show_help()
+{
+    printf "%s\n" \
+"Usage: $NAME [-h] [-v]
+
+Index list of files from frequently used directories. This allows other
+commands such as ff, fcd, etc. to locate files fast.
+
+Options:
+  -h, --help     Show this help and exit.
+  -v, --version  Show version and exit.
+
+Report bugs to $AUTHOR."
+}
+
+
+# Start.
+main "$@"

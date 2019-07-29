@@ -1,0 +1,2 @@
+FFPATH="$TDATA/files2/dir  1:$TDATA/files2/dir 2:$TDATA/files2/dir3"
+FFCACHE=$TWORK/cache

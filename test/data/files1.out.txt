@@ -1,0 +1,16 @@
+test/data/files1
+test/data/files1/a.txt
+test/data/files1/b.txt
+test/data/files1/c.txt
+test/data/files1/dir1
+test/data/files1/dir1/a.txt
+test/data/files1/dir1/b.txt
+test/data/files1/dir1/c.txt
+test/data/files1/dir2
+test/data/files1/dir2/a.txt
+test/data/files1/dir2/b.txt
+test/data/files1/dir2/c.txt
+test/data/files1/dir3
+test/data/files1/dir3/a.txt
+test/data/files1/dir3/b.txt
+test/data/files1/dir3/c.txt

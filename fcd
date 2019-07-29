@@ -1,0 +1,119 @@
+#!/bin/sh
+
+# fcd - Change working directory to location specified by partial path.
+
+# The MIT License (MIT)
+#
+# Copyright (c) 2017 Susam Pal
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+# Starting point of this script.
+#
+# Arguments:
+#   arg...: All arguments this script is invoked with.
+main()
+{
+    . fcom
+    NAME=fcd
+    GOOD=0
+    FAIL=1
+    EXIT=2
+
+    parse_arguments "$@"
+    rc=$?
+    if [ $rc -eq $FAIL ]
+    then
+        return 1
+    elif [ $rc -eq $EXIT ]
+    then
+        return 0
+    fi
+
+    if p=$(ff "$@")
+    then
+        [ -d "$p" ] && cd "$p" || cd $(dirname "$p")
+    fi
+}
+
+
+# Parse command line arguments passed to this script.
+#
+# Arguments:
+#   arg...: All arguments this script is invoked with.
+#
+# Errors:
+#   Exit with an error message when invalid arguments are specified.
+parse_arguments()
+{
+    path=
+    while [ "$#" -gt 0 ]
+    do
+        case $1 in
+            -h | --help)
+                show_help
+                return $EXIT
+                ;;
+            -v | --version)
+                show_version
+                return $EXIT
+                ;;
+            -?*)
+                log Unknown option \""$1"\".
+                return $FAIL
+                ;;
+            *)
+                break 
+                ;;
+        esac
+    done
+
+    return $GOOD
+}
+
+
+# Show help.
+show_help()
+{
+    printf "%s\n" \
+"Usage: $NAME [-h] [-v] [PATH]
+
+Change the working directory to the location specified by PATH.
+If PATH refers to a file, then change the working directory to the
+directory that contains the file.
+
+Note: In order to use this command, there must be an entry in shell
+startup file that aliases 'vcd' to source this script into the current
+shell. Here is an example for ~/.bashrc.
+
+    alias fcd='. fcd'
+
+An absolute or a partial path to a file or a directory may be specified
+as PATH. If PATH is not specified, it defaults to \$ADE_VIEW_ROOT.
+
+Options:
+  -h, --help     Show this help and exit.
+  -v, --version  Show version and exit.
+
+Report bugs to $AUTHOR."
+}
+
+
+main "$@"

@@ -1,0 +1,81 @@
+#!/bin/sh
+
+# Tests for fin command.
+
+# The MIT License (MIT)
+#
+# Copyright (c) 2017 Susam Pal
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+test_quiet()
+{
+    FFRC=test/data/_ffrc1 ./fin -q
+    sort "$TWORK/cache/files.txt" > "$TWORK/cache/files.sorted.txt"
+    diff -u "$TDATA/files1.out.txt" "$TWORK/cache/files.sorted.txt"
+}
+
+
+test_log()
+{
+    FFRC=test/data/_ffrc1 ./fin 2> "$TWORK/files1.log"
+    diff -u "$TDATA/files1.log" "$TWORK/files1.log"
+}
+
+
+test_space_in_path()
+{
+    FFRC=test/data/_ffrc2 ./fin 2> "$TWORK/files2.log"
+    diff -u "$TDATA/files2.log" "$TWORK/files2.log" || return 1
+
+    sort "$TWORK/cache/files.txt" > "$TWORK/cache/files.sorted.txt"
+    diff -u "$TDATA/files2.out.txt" "$TWORK/cache/files.sorted.txt"
+}
+
+
+test_help()
+{
+    for opt in -h --help
+    do
+        ./fin $opt | head -n 1 | grep -q '^Usage: fin' || return 1
+    done
+}
+
+
+test_version()
+{
+    for opt in -v --version
+    do
+        ./fin $opt | head -n 1 | grep -q '^fin [[:digit:]]' || return 1
+    done
+}
+
+
+test_unknown_option()
+{
+    ./fin -x 2>&1 | grep -q '^fin: Unknown option "-x"\.$'
+}
+
+
+test_surplus_argument()
+{
+    ./fin foo 2>&1 | grep -q '^fin: Surplus argument "foo"\.$'
+}
